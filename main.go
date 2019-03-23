@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	url = "localhost"
+	url    = "localhost"
+	dbName = "test" //change to your DB name
 )
 
 type SensorData struct {
@@ -35,6 +36,9 @@ func main() {
 	insertSensorItem(testSD, collectionSensor)
 	testCD := CommandData{CommandID: 005, Data: 1234, Timestamp: 123456789}
 	insertCommandItem(testCD, collectionCommand)
+
+	listSensorData(collectionSensor)
+	listCommandData(collectionCommand)
 }
 
 // function used to connect to MongoDB server
@@ -45,7 +49,7 @@ func connect() (*mgo.Session, *mgo.Collection, *mgo.Collection) {
 		log.Fatal(err)
 	}
 	fmt.Printf("Successfully connected to mongodb server at %v\n", url)
-	dbName := "test" //change to your DB name
+	//dbName := "test" //change to your DB name
 	db := session.DB(dbName)
 	if db == nil {
 		fmt.Printf("db '%v' not found, exiting...\n", dbName)
@@ -57,6 +61,7 @@ func connect() (*mgo.Session, *mgo.Collection, *mgo.Collection) {
 	return session, collectionSensor, collectionCommand
 }
 
+// insert item in the SensorData collection
 func insertSensorItem(newItem SensorData, collection *mgo.Collection) {
 	err := collection.Insert(&SensorData{SensorID: newItem.SensorID, Data: newItem.Data, Timestamp: newItem.Timestamp})
 	if err != nil {
@@ -66,11 +71,39 @@ func insertSensorItem(newItem SensorData, collection *mgo.Collection) {
 	}
 }
 
+// insert item in the CommandData collection
 func insertCommandItem(newItem CommandData, collection *mgo.Collection) {
 	err := collection.Insert(&SensorData{SensorID: newItem.CommandID, Data: newItem.Data, Timestamp: newItem.Timestamp})
 	if err != nil {
 		fmt.Printf("Error inserting command item\n")
 	} else {
 		fmt.Printf("Command Inserted\n")
+	}
+}
+
+//lists all of the documents in SensorData
+func listSensorData(collection *mgo.Collection) {
+	// Query All
+	var results []SensorData
+	err := collection.Find(bson.M{}).Sort("Timestamp").All(&results) // sort by newest timestamp
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("SensorData: \n")
+	for _, SensorData := range results {
+		fmt.Printf("  [%v, SensorId:%v, Data:%v, Timestamp:%v]\n", SensorData.ID, SensorData.SensorID, SensorData.Data, SensorData.Timestamp)
+	}
+}
+
+//lists all of the documents in CommandData
+func listCommandData(collection *mgo.Collection) {
+	var results []CommandData
+	err := collection.Find(bson.M{}).Sort("Timestamp").All(&results) // sort by newest timestamp
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("CommandData: \n")
+	for _, CommandData := range results {
+		fmt.Printf("  [%v, CommandId:%v, Data:%v, Timestamp:%v]\n", CommandData.ID, CommandData.CommandID, CommandData.Data, CommandData.Timestamp)
 	}
 }
