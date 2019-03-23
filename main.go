@@ -37,8 +37,8 @@ func main() {
 	testCD := CommandData{CommandID: 005, Data: 1234, Timestamp: 123456789}
 	insertCommandItem(testCD, collectionCommand)
 
-	listSensorData(collectionSensor)
-	listCommandData(collectionCommand)
+	listSensorData(collectionSensor, 5)   //print 5 most recent items in SensorData
+	listCommandData(collectionCommand, 5) //print 5 most recent items in CommandData
 }
 
 // function used to connect to MongoDB server
@@ -81,8 +81,9 @@ func insertCommandItem(newItem CommandData, collection *mgo.Collection) {
 	}
 }
 
-//lists all of the documents in SensorData
-func listSensorData(collection *mgo.Collection) {
+//lists all of the documents in SensorData sorted by Timestamp, count prints as many items up to count
+//  (i.e. count = 100 prints the 100 most recent items)
+func listSensorData(collection *mgo.Collection, count int) {
 	// Query All
 	var results []SensorData
 	err := collection.Find(bson.M{}).Sort("Timestamp").All(&results) // sort by newest timestamp
@@ -90,20 +91,31 @@ func listSensorData(collection *mgo.Collection) {
 		panic(err)
 	}
 	fmt.Printf("SensorData: \n")
+	item := 0 // counter for how many items have been printed
 	for _, SensorData := range results {
+		item++
+		if item > count {
+			break
+		}
 		fmt.Printf("  [%v, SensorId:%v, Data:%v, Timestamp:%v]\n", SensorData.ID, SensorData.SensorID, SensorData.Data, SensorData.Timestamp)
 	}
 }
 
-//lists all of the documents in CommandData
-func listCommandData(collection *mgo.Collection) {
+//lists all of the documents in CommandData sorted by Timestamp, count prints as many items up to count
+//  (i.e. count = 100 prints the 100 most recent items)
+func listCommandData(collection *mgo.Collection, count int) {
 	var results []CommandData
 	err := collection.Find(bson.M{}).Sort("Timestamp").All(&results) // sort by newest timestamp
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("CommandData: \n")
+	item := 0 // counter for how many items have been printed
 	for _, CommandData := range results {
+		item++
+		if item > count {
+			break
+		}
 		fmt.Printf("  [%v, CommandId:%v, Data:%v, Timestamp:%v]\n", CommandData.ID, CommandData.CommandID, CommandData.Data, CommandData.Timestamp)
 	}
 }
