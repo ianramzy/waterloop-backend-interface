@@ -27,10 +27,33 @@ type CommandData struct {
 	Timestamp uint64
 }
 
+//func connect()(*mgo.Session, ){
+//
+//	session, err := mgo.Dial(url)
+//	if err != nil {
+//		fmt.Printf("couldnt connect to DB :(\n")
+//		log.Fatal(err)
+//	}
+//	defer session.Close()
+//	fmt.Printf("Successfully connected to mongodb server at %v\n", url)
+//
+//	dbName := "test"
+//	db := session.DB(dbName)
+//	if db == nil {
+//		fmt.Printf("db '%v' not found, exiting...\n", dbName)
+//		return
+//	}
+//
+//	// define locations of collections, just two for now: sensor and command
+//	collectionSensor := session.DB("test").C("sensor")
+//	collectionCommand := session.DB("test").C("command")
+//
+//}
 func main() {
 	session, err := mgo.Dial(url)
+
 	if err != nil {
-		fmt.Printf("couldnt connect to DB :(")
+		fmt.Printf("couldnt connect to DB :(\n")
 		log.Fatal(err)
 	}
 	defer session.Close()
@@ -39,43 +62,38 @@ func main() {
 	dbName := "test"
 	db := session.DB(dbName)
 	if db == nil {
-		fmt.Printf("db '%v' not found, exiting...", dbName)
+		fmt.Printf("db '%v' not found, exiting...\n", dbName)
 		return
 	}
 
 	// define locations of collections, just two for now: sensor and command
-	collectionS := session.DB("test").C("sensor")
-	collectionC := session.DB("test").C("command")
+	collectionSensor := session.DB("test").C("sensor")
+	collectionCommand := session.DB("test").C("command")
 
 	testSD := SensorData{SensorID: 001, Data: 99, Timestamp: 123456789}
 	testCD := CommandData{CommandID: 005, Data: 1234, Timestamp: 123456789}
 
-	insertSensorItem(testSD, collectionS)
-	insertCommandItem(testCD, collectionC)
+	insertSensorItem(testSD, collectionSensor)
+	insertCommandItem(testCD, collectionCommand)
 
-	//err = collectionS.Insert(&SensorData{SensorID: 001, Data: 99, Timestamp: 123456789})
-	//if err != nil {fmt.Printf("Error inserting sensor item")}
-
-	fmt.Printf("All done!")
+	fmt.Printf("All done!\n")
 }
 
 func insertSensorItem(newItem SensorData, collection *mgo.Collection) {
 	err := collection.Insert(&SensorData{SensorID: newItem.SensorID, Data: newItem.Data, Timestamp: newItem.Timestamp})
-
 	if err != nil {
-		fmt.Printf("Error inserting sensor item")
+		fmt.Printf("Error inserting sensor item\n")
 	} else {
-		fmt.Printf("Sensor item Inserted")
+		fmt.Printf("Sensor item Inserted\n")
 	}
 }
 
 func insertCommandItem(newItem CommandData, collection *mgo.Collection) {
 	err := collection.Insert(&SensorData{SensorID: newItem.CommandID, Data: newItem.Data, Timestamp: newItem.Timestamp})
-
 	if err != nil {
-		fmt.Printf("Error inserting command item")
+		fmt.Printf("Error inserting command item\n")
 	} else {
-		fmt.Printf("command item Inserted")
+		fmt.Printf("command item Inserted\n")
 	}
 }
 
